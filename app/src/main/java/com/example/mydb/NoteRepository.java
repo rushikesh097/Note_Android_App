@@ -4,9 +4,11 @@ import android.app.Application;
 import android.os.AsyncTask;
 
 import androidx.lifecycle.LiveData;
-import androidx.room.Delete;
 
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class NoteRepository {
     private NoteDao noteDao;
@@ -93,4 +95,5 @@ public class NoteRepository {
             return null;
         }
     }
+
 }

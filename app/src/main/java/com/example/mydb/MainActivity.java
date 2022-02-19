@@ -7,7 +7,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -15,33 +14,22 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.List;
+import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements NoteAdapter.OnItemClickListener{
+public class MainActivity extends AppCompatActivity implements OnItemClickListener{
     private NoteViewModel noteViewModel;
-    private AlertDialog.Builder builder;
+
     private RecyclerView recyclerView;
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
-    private Dialog dialog;
-    private Button delete;
-    private Button edit;
     private boolean flag = false;
 
     ActivityResultLauncher<Intent> launchSomeActivity = registerForActivityResult(
@@ -49,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
             new ActivityResultCallback<ActivityResult>() {
                 @Override
                 public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == Activity.RESULT_OK && !result.getData().hasExtra(AddEditNoteActivity.EXTRA_ID)) {
+                    if (result.getResultCode() == Activity.RESULT_OK && !Objects.requireNonNull(result.getData()).hasExtra(AddEditNoteActivity.EXTRA_ID)) {
                         Intent data = result.getData();
                         String title = data.getStringExtra(AddEditNoteActivity.EXTRA_TITLE);
                         String description = data.getStringExtra(AddEditNoteActivity.EXTRA_DESCRIPTION);
@@ -92,17 +80,11 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        builder = new AlertDialog.Builder(this);
-        builder.setIcon(android.R.drawable.ic_delete);
 
         FloatingActionButton floatingActionButton = findViewById(R.id.button_add_note);
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);
-                intent.putExtra("FROM",0);
-                launchSomeActivity.launch(intent);
-            }
+        floatingActionButton.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, AddEditNoteActivity.class);
+            launchSomeActivity.launch(intent);
         });
 
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL);
@@ -114,14 +96,11 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
         final NoteAdapter noteAdapter = new NoteAdapter(this);
         recyclerView.setAdapter(noteAdapter);
         noteViewModel = new ViewModelProvider(this).get(NoteViewModel.class);
-        noteViewModel.getAllNotes().observe(this, new Observer<List<Note>>() {
-            @Override
-            public void onChanged(List<Note> notes) {
-                //update RecyclerView
-                noteAdapter.submitList(notes);
-                changeLayout();
-                changeLayout();
-            }
+        noteViewModel.getAllNotes().observe(this, notes -> {
+            //update RecyclerView
+            noteAdapter.submitList(notes);
+            changeLayout();
+            changeLayout();
         });
 
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -150,7 +129,8 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.delete_all_notes:
-                alertDialogOptionAll();
+                new AlertDialogMessage(noteViewModel,this)
+                        .alertDialogOptionAll();
                 return true;
             case R.id.layout_change:
                 if(flag){
@@ -166,50 +146,6 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    private void alertDialogOptionAll(){
-        builder.setMessage("You Really Want to Delete All?")
-                .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        noteViewModel.deleteAllNotes();
-                        Toast.makeText(MainActivity.this, "All Notes Deleted !", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                        Toast.makeText(MainActivity.this, "Deletion Canceled !", Toast.LENGTH_SHORT).show();
-                    }
-                });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.setTitle("Delete");
-        alertDialog.show();
-    }
-
-    private void alertDialogOptionOne(final Note note){
-        builder.setMessage("You Really Want to Delete ?")
-                .setCancelable(true)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        noteViewModel.delete(note);
-                        Toast.makeText(MainActivity.this, "Note Deleted !", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
-                        Toast.makeText(MainActivity.this, "Deletion Canceled !", Toast.LENGTH_SHORT).show();
-                    }
-                });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.setTitle("Delete");
-        alertDialog.show();
     }
 
     private void changeLayout(){
@@ -237,7 +173,8 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
 
     @Override
     public void onItemLongClick(Note note) {
-        alertDialogOptionOne(note);
-
+        AlertDialogMessage alertDialogMessage  = new AlertDialogMessage(noteViewModel,this);
+        alertDialogMessage.setNote(note);
+        alertDialogMessage.alertDialogOptionOne();
     }
 }

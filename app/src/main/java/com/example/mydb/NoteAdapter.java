@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class NoteAdapter extends ListAdapter<Note,NoteAdapter.NoteHolder> {
 
@@ -91,9 +91,10 @@ public class NoteAdapter extends ListAdapter<Note,NoteAdapter.NoteHolder> {
         }
     }
 
-    interface OnItemClickListener {
-        void onItemClick(Note note);
-        void onItemLongClick(Note note);
-    }
-
 }
+
+interface OnItemClickListener {
+    void onItemClick(Note note);
+    void onItemLongClick(Note note);
+}
+
