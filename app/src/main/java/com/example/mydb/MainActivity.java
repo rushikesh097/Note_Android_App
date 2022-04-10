@@ -116,7 +116,9 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
 
 
         deleteAll.setOnClickListener(view -> new AlertDialogMessage(noteViewModel,MainActivity.this)
-                .alertDialogOptionAll());
+                .setDialog("You Really Want to Delete All?"));
+        //
+        //
 
         changeView.setOnClickListener(view -> {
             if(flag){
@@ -177,6 +179,6 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
     public void onItemLongClick(Note note) {
         AlertDialogMessage alertDialogMessage  = new AlertDialogMessage(noteViewModel,this);
         alertDialogMessage.setNote(note);
-        alertDialogMessage.alertDialogOptionOne();
+        alertDialogMessage.setDialog("You Really Want to Delete ?");
     }
 }

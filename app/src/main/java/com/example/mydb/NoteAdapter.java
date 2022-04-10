@@ -10,11 +10,6 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.w3c.dom.Text;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 public class NoteAdapter extends ListAdapter<Note,NoteAdapter.NoteHolder> {
 
     private OnItemClickListener onItemClickListener;
@@ -81,25 +76,19 @@ public class NoteAdapter extends ListAdapter<Note,NoteAdapter.NoteHolder> {
             description = itemView.findViewById(R.id.text_view_description);
             date = itemView.findViewById(R.id.text_view_date);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    int position = getAdapterPosition();
-                    if(onItemClickListener != null && position != RecyclerView.NO_POSITION){
-                        onItemClickListener.onItemClick(getItem(position));
-                    }
+            itemView.setOnClickListener(view -> {
+                int position = getAdapterPosition();
+                if(onItemClickListener != null && position != RecyclerView.NO_POSITION){
+                    onItemClickListener.onItemClick(getItem(position));
                 }
             });
 
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    int position = getAdapterPosition();
-                    if(onItemClickListener != null && position != RecyclerView.NO_POSITION){
-                        onItemClickListener.onItemLongClick(getItem(position));
-                    }
-                    return false;
+            itemView.setOnLongClickListener(view -> {
+                int position = getAdapterPosition();
+                if(onItemClickListener != null && position != RecyclerView.NO_POSITION){
+                    onItemClickListener.onItemLongClick(getItem(position));
                 }
+                return false;
             });
         }
     }
