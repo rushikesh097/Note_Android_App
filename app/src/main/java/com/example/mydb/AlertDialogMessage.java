@@ -14,7 +14,7 @@ public class AlertDialogMessage {
         this.noteViewModel = noteViewModel;
         this.context = context;
         builder = new AlertDialog.Builder(context);
-        builder.setIcon(android.R.drawable.ic_delete);
+        builder.setIcon(R.drawable.ic_round_delete_24);
     }
 
     public void setNote(Note note) {

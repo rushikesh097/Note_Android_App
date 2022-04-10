@@ -7,7 +7,7 @@
     android:layout_marginStart="8dp"
     android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp"
-    app:cardBackgroundColor="#FF322C4C"
+    app:cardBackgroundColor="@color/purple_500"
     app:cardCornerRadius="15dp">
 
     <RelativeLayout
@@ -25,7 +25,7 @@
             android:paddingStart="10dp"
             android:text="title"
             android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textColor="@color/white" />
+            android:textColor="@color/wheat" />
 
         <TextView
             android:id="@+id/text_view_description"

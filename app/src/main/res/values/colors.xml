@@ -9,4 +9,5 @@
     <color name="black">#000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="yellow">#FFFDD835</color>
+    <color name="wheat">#F2E9E9</color>
 </resources>

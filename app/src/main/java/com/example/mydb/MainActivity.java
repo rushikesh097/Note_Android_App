@@ -1,36 +1,41 @@
 package com.example.mydb;
 
 
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.splashscreen.SplashScreen;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.widget.Toast;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.List;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity implements OnItemClickListener{
+public class MainActivity extends AppCompatActivity implements NoteAdapter.OnItemClickListener{
+
     private NoteViewModel noteViewModel;
 
     private RecyclerView recyclerView;
     private StaggeredGridLayoutManager staggeredGridLayoutManager;
     private boolean flag = false;
+    private ImageView changeView;
+    private NoteAdapter noteAdapter;
 
     ActivityResultLauncher<Intent> launchSomeActivity = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -78,8 +83,13 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ImageView deleteAll = findViewById(R.id.delete_all_notes);
+        changeView = findViewById(R.id.layout_change);
+        TextView addText = findViewById(R.id.add_text);
 
         FloatingActionButton floatingActionButton = findViewById(R.id.button_add_note);
         floatingActionButton.setOnClickListener(view -> {
@@ -93,59 +103,35 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         changeLayout();
         recyclerView.setHasFixedSize(true);
 
-        final NoteAdapter noteAdapter = new NoteAdapter(this);
-        recyclerView.setAdapter(noteAdapter);
+        noteAdapter = new NoteAdapter(this,addText);
+        recyclerView.setAdapter(noteAdapter);  
         noteViewModel = new ViewModelProvider(this).get(NoteViewModel.class);
-        noteViewModel.getAllNotes().observe(this, notes -> {
+        LiveData<List<Note>> allNotes = noteViewModel.getAllNotes();
+        allNotes.observe(this, notes -> {
             //update RecyclerView
             noteAdapter.submitList(notes);
             changeLayout();
             changeLayout();
         });
 
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
-                return false;
+
+        deleteAll.setOnClickListener(view -> new AlertDialogMessage(noteViewModel,MainActivity.this)
+                .alertDialogOptionAll());
+
+        changeView.setOnClickListener(view -> {
+            if(flag){
+                changeLayout();
+                changeView.setImageResource(R.drawable.ic_baseline_grid_on_24);
             }
-
-            @Override
-            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-                noteViewModel.delete(noteAdapter.getNoteAt(viewHolder.getAdapterPosition()));
-                Toast.makeText(MainActivity.this, "Note Deleted !", Toast.LENGTH_SHORT).show();
+            else{
+                changeLayout();
+                changeView.setImageResource(R.drawable.ic_baseline_view_list_24);
             }
-        }).attachToRecyclerView(recyclerView);
+        });
 
-    }
+        getItemTouchHelper().attachToRecyclerView(recyclerView);
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.main_menu,menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.delete_all_notes:
-                new AlertDialogMessage(noteViewModel,this)
-                        .alertDialogOptionAll();
-                return true;
-            case R.id.layout_change:
-                if(flag){
-                    changeLayout();
-                    item.setIcon(R.drawable.ic_baseline_grid_on_24);
-                    item.setTitle("Grid Layout");
-                }
-                else{
-                    changeLayout();
-                    item.setIcon(R.drawable.ic_baseline_view_list_24);
-                    item.setTitle("Linear Layout");
-                }
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     private void changeLayout(){
@@ -159,6 +145,22 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         }
 
     }
+
+    private ItemTouchHelper getItemTouchHelper() {
+        return new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                noteViewModel.delete(noteAdapter.getItem(viewHolder.getAdapterPosition()));
+                Toast.makeText(MainActivity.this, "Note Deleted !", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
     @Override
     public void onItemClick(Note note) {

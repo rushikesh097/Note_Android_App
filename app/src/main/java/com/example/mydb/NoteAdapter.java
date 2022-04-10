@@ -10,16 +10,20 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.w3c.dom.Text;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class NoteAdapter extends ListAdapter<Note,NoteAdapter.NoteHolder> {
 
     private OnItemClickListener onItemClickListener;
+    private TextView addText;
 
-    public NoteAdapter(OnItemClickListener onItemClickListener){
+    public NoteAdapter(OnItemClickListener onItemClickListener, TextView addText){
         super(DIFF_CALLBACK);
         this.onItemClickListener = onItemClickListener;
+        this.addText = addText;
     }
 
     private static final DiffUtil.ItemCallback<Note> DIFF_CALLBACK = new DiffUtil.ItemCallback<Note>() {
@@ -32,7 +36,8 @@ public class NoteAdapter extends ListAdapter<Note,NoteAdapter.NoteHolder> {
         public boolean areContentsTheSame(@NonNull Note oldItem, @NonNull Note newItem) {
             return oldItem.getTitle().equals(newItem.getTitle()) &&
                     oldItem.getDescription().equals(newItem.getDescription()) &&
-                    oldItem.getPriority() == newItem.getPriority();
+                    oldItem.getPriority() == newItem.getPriority() &&
+                    oldItem.getDate().equals(newItem.getDate());
         }
     };
 
@@ -50,11 +55,19 @@ public class NoteAdapter extends ListAdapter<Note,NoteAdapter.NoteHolder> {
         holder.title.setText(currentNote.getTitle());
         holder.description.setText(currentNote.getDescription());
         holder.date.setText(currentNote.getDate());
+        if(getItemCount() > 0){
+            addText.setText("");
+        }
     }
 
+    @Override
+    public int getItemCount() {
+        return super.getItemCount();
+    }
 
-    public Note getNoteAt(int position){
-        return getItem(position);
+    @Override
+    protected Note getItem(int position) {
+        return super.getItem(position);
     }
 
     class NoteHolder extends RecyclerView.ViewHolder{
@@ -91,10 +104,11 @@ public class NoteAdapter extends ListAdapter<Note,NoteAdapter.NoteHolder> {
         }
     }
 
+    public interface OnItemClickListener {
+        void onItemClick(Note note);
+        void onItemLongClick(Note note);
+    }
+
 }
 
-interface OnItemClickListener {
-    void onItemClick(Note note);
-    void onItemLongClick(Note note);
-}
 
