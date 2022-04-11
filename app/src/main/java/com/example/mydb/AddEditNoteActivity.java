@@ -34,23 +34,34 @@ public class AddEditNoteActivity extends AppCompatActivity {
 
         ImageView save = findViewById(R.id.save_note);
         ImageView close = findViewById(R.id.back);
-        TextView title = findViewById(R.id.header_title);
+        TextView name = findViewById(R.id.header_title);
+        ImageView send = findViewById(R.id.share_note);
+
         editTextTitle = findViewById(R.id.edit_text_title);
         editTextDescription = findViewById(R.id.edit_text_description);
 
         Intent intent = getIntent();
         if(intent.hasExtra(EXTRA_ID)){
-            title.setText("Edit Note");
+            name.setText("Edit Note");
             editTextTitle.setText(intent.getStringExtra(EXTRA_TITLE));
             editTextDescription.setText(intent.getStringExtra(EXTRA_DESCRIPTION));
         }
         else{
-            title.setText("Add Note");
+            name.setText("Add Note");
         }
 
         save.setOnClickListener(view -> saveNote());
 
         close.setOnClickListener(view -> finish());
+
+        send.setOnClickListener(view -> {
+            if(editTextTitle.getText().toString().length()!=0){
+                shareNote(editTextTitle.getText().toString()+"\n"+editTextDescription.getText().toString());
+            }
+            else {
+                Toast.makeText(AddEditNoteActivity.this, "Add Title and Text", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter ftf = DateTimeFormatter.ofPattern("HH:mm");
@@ -81,6 +92,17 @@ public class AddEditNoteActivity extends AppCompatActivity {
         }
         setResult(RESULT_OK,intent);
         finish();
+    }
+
+    private void shareNote(String note)
+    {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND)
+                .putExtra(Intent.EXTRA_TEXT,note)
+                .setType("text/plain");
+
+        Intent shareIntent = Intent.createChooser(sendIntent, "Share Note as Text");
+        startActivity(shareIntent);
     }
 
 }
