@@ -2,9 +2,17 @@ package com.example.mydb;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.os.Build;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
+
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AlertDialogMessage {
     private Note note;
@@ -17,7 +25,8 @@ public class AlertDialogMessage {
         this.context = context;
     }
 
-    public void setDialog(String text){
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    public void setDialog(String text, View view1){
         dialog = new Dialog(context);
         dialog.setContentView(R.layout.alert_layout);
         TextView message = dialog.findViewById(R.id.message);
@@ -30,6 +39,17 @@ public class AlertDialogMessage {
                     noteViewModel.delete(note);
                     Toast.makeText(context, "Note Deleted !", Toast.LENGTH_SHORT).show();
                     dialog.cancel();
+                    Snackbar.make(view1,"Note Deleted !", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    noteViewModel.insert(note);
+                                }
+                            })
+                            .setBackgroundTint(context.getColor(R.color.purple_500))
+                            .setActionTextColor(context.getColor(R.color.wheat))
+                            .setTextColor(context.getColor(R.color.wheat))
+                            .show();
                 });
                 no.setOnClickListener(view -> dialog.cancel());
                 break;

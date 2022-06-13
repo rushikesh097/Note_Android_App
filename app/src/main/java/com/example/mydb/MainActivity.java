@@ -3,7 +3,9 @@ package com.example.mydb;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -13,6 +15,7 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 import androidx.lifecycle.LiveData;
@@ -23,6 +26,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 import java.util.Objects;
@@ -116,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
 
 
         deleteAll.setOnClickListener(view -> new AlertDialogMessage(noteViewModel,MainActivity.this)
-                .setDialog("You Really Want to Delete All?"));
+                .setDialog("You Really Want to Delete All?", view));
         //
         //
 
@@ -132,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
         });
 
         getItemTouchHelper().attachToRecyclerView(recyclerView);
-
 
     }
 
@@ -175,10 +179,11 @@ public class MainActivity extends AppCompatActivity implements NoteAdapter.OnIte
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    public void onItemLongClick(Note note) {
+    public void onItemLongClick(Note note, View view) {
         AlertDialogMessage alertDialogMessage  = new AlertDialogMessage(noteViewModel,this);
         alertDialogMessage.setNote(note);
-        alertDialogMessage.setDialog("You Really Want to Delete ?");
+        alertDialogMessage.setDialog("You Really Want to Delete ?", view);
     }
 }
